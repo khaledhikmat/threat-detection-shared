@@ -1,2 +1,4 @@
+github.com/dapr/dapr v1.13.2 h1:H6DGifll670UntmOA06+REjZsR6nbbc44ENEI3drFXo=
+github.com/dapr/dapr v1.13.2/go.mod h1:bJYdj/ZoaJsR8pZGdOyaPMOXZYHURwEZxkF8WjYBEZw=
 github.com/guregu/null v4.0.0+incompatible h1:4zw0ckM7ECd6FNNddc3Fu4aty9nTlpkkzH7dPn4/4Gw=
 github.com/guregu/null v4.0.0+incompatible/go.mod h1:ePGpQaN9cw0tj45IR5E5ehMvsFlLlQZAkkOXZurJ3NM=

@@ -15,10 +15,12 @@ const (
 )
 
 type configService struct {
-	Dapr     bool      `json:"isDapr"`
-	Diagrid  bool      `json:"isDiagrid"`
-	Capturer Capturer  `json:"capturer"`
-	FsData   *embed.FS `json:"-"`
+	Dapr                  bool                    `json:"isDapr"`
+	Diagrid               bool                    `json:"isDiagrid"`
+	Capturer              Capturer                `json:"capturer"`
+	StorageProvider       string                  `json:"storageProvider"`
+	CloudStorageProviders map[string]CloudStorage `json:"cloudStorageProviders"`
+	FsData                *embed.FS               `json:"-"`
 }
 
 func New(fs *embed.FS) IService {
@@ -29,6 +31,14 @@ func New(fs *embed.FS) IService {
 	err := json.Unmarshal(read(p.FsData, fmt.Sprintf("data/%s.json", "dev")), &p)
 	if err != nil {
 		panic(err)
+	}
+
+	// Resolve storage provider access keys
+	for key, value := range p.CloudStorageProviders {
+		if value.AccessKeyEnvVar != "" {
+			value.AccessKey = os.Getenv(value.AccessKeyEnvVar)
+			p.CloudStorageProviders[key] = value
+		}
 	}
 
 	return &p
@@ -49,6 +59,19 @@ func (s *configService) IsDiagrid() bool {
 
 func (s *configService) GetCapturer() Capturer {
 	return s.Capturer
+}
+
+func (s *configService) GetStorageProvider() string {
+	return s.StorageProvider
+}
+
+func (s *configService) GetCloudStorage(provider string) CloudStorage {
+	value, ok := s.CloudStorageProviders[provider]
+	if !ok {
+		return CloudStorage{}
+	}
+
+	return value
 }
 
 func (s *configService) Finalize() {

@@ -3,3 +3,5 @@ module github.com/khaledhikmat/threat-detection-shared
 go 1.22.2
 
 require github.com/guregu/null v4.0.0+incompatible
+
+require github.com/dapr/dapr v1.13.2 // indirect

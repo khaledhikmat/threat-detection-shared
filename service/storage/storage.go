@@ -10,9 +10,13 @@ import (
 	"github.com/khaledhikmat/threat-detection-shared/service/config"
 )
 
-var providerFunctions = map[string]func(path2File string) (string, error){
-	"aws":   store2aws,
-	"azure": store2azure,
+var providerFileFunctions = map[string]func(path2File string) (string, error){
+	"aws":   storeFileViaAWS,
+	"azure": storeFileViaAzure,
+}
+
+var providerKeyValueFunctions = map[string]func(ctx context.Context, cfgsvc config.IService, client dapr.Client, store, key, value string) error{
+	"dapr": storeKeyValueViaDapr,
 }
 
 func New(c dapr.Client, cfgsvc config.IService) IService {
@@ -27,39 +31,23 @@ type storage struct {
 	CfgSvc     config.IService
 }
 
-func (s *storage) StoreKeyValue(ctx context.Context, store, key, value string) error {
-	if !s.CfgSvc.IsDapr() && !s.CfgSvc.IsDiagrid() {
-		return nil
+func (s *storage) StoreKeyValue(ctx context.Context, provider, store, key, value string) error {
+	fn, ok := providerKeyValueFunctions[provider]
+	if !ok {
+		return fmt.Errorf("provider %s not supported", provider)
 	}
 
-	if (s.CfgSvc.IsDapr() || s.CfgSvc.IsDiagrid()) && s.DaprClient == nil {
-		return fmt.Errorf("Dapr client is nil")
-	}
-
-	return s.DaprClient.SaveState(ctx,
-		store,
-		key,
-		[]byte(value),
-		nil)
+	return fn(ctx, s.CfgSvc, s.DaprClient, store, key, value)
 }
 
 func (s *storage) StoreRecordingClip(_ context.Context, provider string, clip equates.RecordingClip) (string, error) {
-	fn, ok := providerFunctions[provider]
+	fn, ok := providerFileFunctions[provider]
 	if !ok {
-		return "", fmt.Errorf("provider not found")
+		return "", fmt.Errorf("provider %s not supported", provider)
 	}
 
 	return fn(clip.LocalReference)
 }
 
 func (s *storage) Finalize() {
-}
-
-// Cloud Provider Functions
-func store2aws(path2File string) (string, error) {
-	return fmt.Sprintf("https://%s/aws_url", path2File), nil
-}
-
-func store2azure(path2File string) (string, error) {
-	return fmt.Sprintf("https://%s/azure_url", path2File), nil
 }

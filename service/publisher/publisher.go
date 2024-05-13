@@ -10,6 +10,12 @@ import (
 	"github.com/khaledhikmat/threat-detection-shared/service/config"
 )
 
+type publishFunction[T any] func(ctx context.Context, cfgsvc config.IService, client dapr.Client, pubsub, topic string, entity T) error
+
+var providerFunctions = map[string]publishFunction[any]{
+	"dapr": publishViaDapr[any],
+}
+
 func New(c dapr.Client, cfgsvc config.IService) IService {
 	return &publisher{
 		DaprClient: c,
@@ -22,17 +28,18 @@ type publisher struct {
 	CfgSvc     config.IService
 }
 
-func (s *publisher) PublishRecordingClip(ctx context.Context, pubsub, topic string, clip equates.RecordingClip) error {
-	if !s.CfgSvc.IsDapr() && !s.CfgSvc.IsDiagrid() {
-		return nil
-	}
-
-	if (s.CfgSvc.IsDapr() || s.CfgSvc.IsDiagrid()) && s.DaprClient == nil {
-		return fmt.Errorf("Dapr client is nil")
-	}
-
-	return s.DaprClient.PublishEvent(ctx, pubsub, topic, clip)
+func (s *publisher) PublishRecordingClip(ctx context.Context, provider, pubsub, topic string, clip equates.RecordingClip) error {
+	return publish[equates.RecordingClip](ctx, s.CfgSvc, s.DaprClient, provider, pubsub, topic, clip)
 }
 
 func (s *publisher) Finalize() {
+}
+
+func publish[T any](ctx context.Context, cfgsvc config.IService, client dapr.Client, provider, pubsub, topic string, entity T) error {
+	fn, ok := providerFunctions[provider]
+	if !ok {
+		return fmt.Errorf("provider %s not supported", provider)
+	}
+
+	return fn(ctx, cfgsvc, client, pubsub, topic, entity)
 }

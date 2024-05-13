@@ -18,6 +18,7 @@ type configService struct {
 	Dapr                  bool                    `json:"isDapr"`
 	Diagrid               bool                    `json:"isDiagrid"`
 	Capturer              Capturer                `json:"capturer"`
+	PublisherProvider     string                  `json:"publisherProvider"`
 	StorageProvider       string                  `json:"storageProvider"`
 	CloudStorageProviders map[string]CloudStorage `json:"cloudStorageProviders"`
 	FsData                *embed.FS               `json:"-"`
@@ -59,6 +60,10 @@ func (s *configService) IsDiagrid() bool {
 
 func (s *configService) GetCapturer() Capturer {
 	return s.Capturer
+}
+
+func (s *configService) GetPublisherProvider() string {
+	return s.PublisherProvider
 }
 
 func (s *configService) GetStorageProvider() string {

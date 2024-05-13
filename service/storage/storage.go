@@ -31,19 +31,19 @@ type storage struct {
 	CfgSvc     config.IService
 }
 
-func (s *storage) StoreKeyValue(ctx context.Context, provider, store, key, value string) error {
-	fn, ok := providerKeyValueFunctions[provider]
+func (s *storage) StoreKeyValue(ctx context.Context, store, key, value string) error {
+	fn, ok := providerKeyValueFunctions[s.CfgSvc.GetKeyValStorageProvider()]
 	if !ok {
-		return fmt.Errorf("provider %s not supported", provider)
+		return fmt.Errorf("provider %s not supported", s.CfgSvc.GetKeyValStorageProvider())
 	}
 
 	return fn(ctx, s.CfgSvc, s.DaprClient, store, key, value)
 }
 
-func (s *storage) StoreRecordingClip(_ context.Context, provider string, clip equates.RecordingClip) (string, error) {
-	fn, ok := providerFileFunctions[provider]
+func (s *storage) StoreRecordingClip(_ context.Context, clip equates.RecordingClip) (string, error) {
+	fn, ok := providerFileFunctions[s.CfgSvc.GetFileStorageProvider()]
 	if !ok {
-		return "", fmt.Errorf("provider %s not supported", provider)
+		return "", fmt.Errorf("provider %s not supported", s.CfgSvc.GetFileStorageProvider())
 	}
 
 	return fn(clip.LocalReference)

@@ -28,17 +28,17 @@ type publisher struct {
 	CfgSvc     config.IService
 }
 
-func (s *publisher) PublishRecordingClip(ctx context.Context, provider, pubsub, topic string, clip equates.RecordingClip) error {
-	return publish[equates.RecordingClip](ctx, s.CfgSvc, s.DaprClient, provider, pubsub, topic, clip)
+func (s *publisher) PublishRecordingClip(ctx context.Context, pubsub, topic string, clip equates.RecordingClip) error {
+	return publish[equates.RecordingClip](ctx, s.CfgSvc, s.DaprClient, pubsub, topic, clip)
 }
 
 func (s *publisher) Finalize() {
 }
 
-func publish[T any](ctx context.Context, cfgsvc config.IService, client dapr.Client, provider, pubsub, topic string, entity T) error {
-	fn, ok := providerFunctions[provider]
+func publish[T any](ctx context.Context, cfgsvc config.IService, client dapr.Client, pubsub, topic string, entity T) error {
+	fn, ok := providerFunctions[cfgsvc.GetPublisherProvider()]
 	if !ok {
-		return fmt.Errorf("provider %s not supported", provider)
+		return fmt.Errorf("provider %s not supported", cfgsvc.GetPublisherProvider())
 	}
 
 	return fn(ctx, cfgsvc, client, pubsub, topic, entity)

@@ -19,7 +19,8 @@ type configService struct {
 	Diagrid               bool                    `json:"isDiagrid"`
 	Capturer              Capturer                `json:"capturer"`
 	PublisherProvider     string                  `json:"publisherProvider"`
-	StorageProvider       string                  `json:"storageProvider"`
+	KeyValStorageProvider string                  `json:"keyValStorageProvider"`
+	FileStorageProvider   string                  `json:"fileStorageProvider"`
 	CloudStorageProviders map[string]CloudStorage `json:"cloudStorageProviders"`
 	FsData                *embed.FS               `json:"-"`
 }
@@ -66,8 +67,12 @@ func (s *configService) GetPublisherProvider() string {
 	return s.PublisherProvider
 }
 
-func (s *configService) GetStorageProvider() string {
-	return s.StorageProvider
+func (s *configService) GetKeyValStorageProvider() string {
+	return s.KeyValStorageProvider
+}
+
+func (s *configService) GetFileStorageProvider() string {
+	return s.FileStorageProvider
 }
 
 func (s *configService) GetCloudStorage(provider string) CloudStorage {

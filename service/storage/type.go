@@ -7,7 +7,7 @@ import (
 )
 
 type IService interface {
-	StoreKeyValue(ctx context.Context, provider, store, key, value string) error
-	StoreRecordingClip(ctx context.Context, provider string, clip equates.RecordingClip) (string, error)
+	StoreKeyValue(ctx context.Context, store, key, value string) error
+	StoreRecordingClip(ctx context.Context, clip equates.RecordingClip) (string, error)
 	Finalize()
 }

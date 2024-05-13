@@ -7,5 +7,5 @@ import (
 )
 
 type IService interface {
-	PublishRecordingClip(ctx context.Context, provider, pubsub, topic string, clip equates.RecordingClip) error
+	PublishRecordingClip(ctx context.Context, pubsub, topic string, clip equates.RecordingClip) error
 }

@@ -5,7 +5,8 @@ type IService interface {
 	IsDiagrid() bool
 	GetCapturer() Capturer
 	GetPublisherProvider() string
-	GetStorageProvider() string
+	GetKeyValStorageProvider() string
+	GetFileStorageProvider() string
 	GetCloudStorage(provider string) CloudStorage
 	Finalize()
 }

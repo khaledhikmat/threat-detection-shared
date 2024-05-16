@@ -23,7 +23,7 @@ type RecordingClip struct {
 	Frames          int       `json:"frames"`
 	BeginTime       null.Time `json:"beginTime"`
 	EndTime         null.Time `json:"endTime"`
-	PrevClip        string    `json:"nextClip"`  // The ID of the previous clip in the sequence
+	PrevClip        string    `json:"prevClip"`  // The ID of the previous clip in the sequence
 	Analytics       []string  `json:"analytics"` // The analytics that were applied on this clip
 	Tags            []string  `json:"tags"`      // The tags that were detected on this clip
 }

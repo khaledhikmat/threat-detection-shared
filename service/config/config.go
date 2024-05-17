@@ -12,6 +12,8 @@ const (
 	RuntimeModeKey     = "THREAT_DETECTION_MODE"
 	RuntimeModeDapr    = "dapr"
 	RuntimeModeDiagrid = "diagrid"
+
+	AIModelKey = "AI_MODEL"
 )
 
 type configService struct {
@@ -57,6 +59,10 @@ func (s *configService) IsDapr() bool {
 
 func (s *configService) IsDiagrid() bool {
 	return strings.ToLower(os.Getenv(RuntimeModeKey)) == RuntimeModeDiagrid
+}
+
+func (s *configService) GetSupportedAIModel() string {
+	return os.Getenv(AIModelKey)
 }
 
 func (s *configService) GetCapturer() Capturer {

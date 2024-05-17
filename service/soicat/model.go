@@ -7,6 +7,7 @@ type Camera struct {
 	Name               string    `json:"name"`
 	RtspURL            string    `json:"rtspUrl"`
 	IsAnalytics        bool      `json:"isAnalytics"`
+	Analytics          []string  `json:"Analytics"`
 	Capturer           string    `json:"capturer"`
 	RecordingState     string    `json:"recordingState"` // recording, idle,
 	ClientState        string    `json:"clientState"`    // started, stopped, paused

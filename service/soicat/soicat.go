@@ -13,6 +13,7 @@ var cameras = []Camera{
 		Name:               "Camera1",
 		RtspURL:            "rtsp://admin:gooze_bumbs@192.168.1.206:554/cam/realmonitor?channel=1&subtype=0",
 		IsAnalytics:        true,
+		Analytics:          []string{"weapon-detection", "fire-detection"},
 		Capturer:           "dead-capturer",
 		LastHeartBeat:      null.TimeFrom(time.Now().Add(-5 * time.Minute)),
 		CaptureWidth:       500,

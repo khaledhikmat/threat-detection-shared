@@ -16,6 +16,7 @@ const (
 	AIModelKey          = "AI_MODEL"
 	AlertTypeKey        = "ALERT_TYPE"
 	MediaIndexerTypeKey = "MEDIA_INDEXER_TYPE"
+	SqlliteFilePath     = "SQLLITE_FILE_PATH"
 )
 
 type configService struct {

@@ -15,5 +15,7 @@ CREATE TABLE IF NOT EXISTS clips (
         analytics TEXT,
         alertTypes TEXT,
         mediaIndexerTypes TEXT,
-        tags TEXT
+        tags TEXT,
+        tagsCount INTEGER NOT NULL DEFAULT 0,
+        alertsCount INTEGER NOT NULL DEFAULT 0
     );	

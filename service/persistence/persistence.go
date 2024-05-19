@@ -30,6 +30,33 @@ func (p *persistence) NewClip(clip equates.RecordingClip) error {
 	return r.NewClip(clip)
 }
 
+func (p *persistence) RetrieveClipCount(lastDays int) (int, error) {
+	r, ok := providers[p.CfgSvc.GetIndexProvider()]
+	if !ok {
+		return 0, fmt.Errorf("provider %s not supported", p.CfgSvc.GetIndexProvider())
+	}
+
+	return r.RetrieveClipCount(lastDays)
+}
+
+func (p *persistence) RetrieveClipsStatsByRegion(lastDays int) ([]equates.ClipStats, error) {
+	r, ok := providers[p.CfgSvc.GetIndexProvider()]
+	if !ok {
+		return []equates.ClipStats{}, fmt.Errorf("provider %s not supported", p.CfgSvc.GetIndexProvider())
+	}
+
+	return r.RetrieveClipsStatsByRegion(lastDays)
+}
+
+func (p *persistence) RetrieveClipsByRegion(region string, page, pageSize int) ([]equates.RecordingClip, error) {
+	r, ok := providers[p.CfgSvc.GetIndexProvider()]
+	if !ok {
+		return []equates.RecordingClip{}, fmt.Errorf("provider %s not supported", p.CfgSvc.GetIndexProvider())
+	}
+
+	return r.RetrieveClipsByRegion(region, page, pageSize)
+}
+
 func (p *persistence) RetrieveTopCapturers(top int, lastDays int) ([]string, error) {
 	r, ok := providers[p.CfgSvc.GetIndexProvider()]
 	if !ok {

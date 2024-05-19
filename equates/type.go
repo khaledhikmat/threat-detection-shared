@@ -29,4 +29,15 @@ type RecordingClip struct {
 	AlertTypes        []string `json:"alertTypes"`        // The alert types that are required on this clip
 	MediaIndexerTypes []string `json:"mediaIndexerTypes"` // The media indexer types that are required for this clip
 	Tags              []string `json:"tags"`              // The tags that were detected on this clip
+	TagsCount         int      `json:"tagsCount"`         // The number of tags that were detected on this clip
+	AlertsCount       int      `json:"alertsCount"`       // Whether the clip is an alert or not
+}
+
+type ClipStats struct {
+	Region  string `json:"region"`
+	Cameras int    `json:"cameras"`
+	Clips   int    `json:"clips"`
+	Frames  int    `json:"frames"`
+	Tags    int    `json:"tags"`
+	Alerts  int    `json:"alerts"`
 }

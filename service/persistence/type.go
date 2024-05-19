@@ -5,6 +5,11 @@ import "github.com/khaledhikmat/threat-detection-shared/equates"
 type IService interface {
 	NewClip(clip equates.RecordingClip) error
 
+	RetrieveClipCount(lastDays int) (int, error)
+
+	RetrieveClipsStatsByRegion(lastDays int) ([]equates.ClipStats, error)
+	RetrieveClipsByRegion(region string, page, pageSize int) ([]equates.RecordingClip, error)
+
 	RetrieveTopCapturers(top int, lastDays int) ([]string, error)
 	RetrieveTopCameras(top int, lastDays int) ([]string, error)
 	RetrieveTopRegions(top int, lastDays int) ([]string, error)

@@ -13,7 +13,9 @@ const (
 	RuntimeModeDapr    = "dapr"
 	RuntimeModeDiagrid = "diagrid"
 
-	AIModelKey = "AI_MODEL"
+	AIModelKey          = "AI_MODEL"
+	AlertTypeKey        = "ALERT_TYPE"
+	MediaIndexerTypeKey = "MEDIA_INDEXER_TYPE"
 )
 
 type configService struct {
@@ -23,6 +25,7 @@ type configService struct {
 	PublisherProvider     string                  `json:"publisherProvider"`
 	KeyValStorageProvider string                  `json:"keyValStorageProvider"`
 	FileStorageProvider   string                  `json:"fileStorageProvider"`
+	IndexProvider         string                  `json:"indexProvider"`
 	CloudStorageProviders map[string]CloudStorage `json:"cloudStorageProviders"`
 	FsData                *embed.FS               `json:"-"`
 }
@@ -65,6 +68,14 @@ func (s *configService) GetSupportedAIModel() string {
 	return os.Getenv(AIModelKey)
 }
 
+func (s *configService) GetSupportedAlertType() string {
+	return os.Getenv(AlertTypeKey)
+}
+
+func (s *configService) GetSupportedMediaIndexType() string {
+	return os.Getenv(MediaIndexerTypeKey)
+}
+
 func (s *configService) GetCapturer() Capturer {
 	return s.Capturer
 }
@@ -79,6 +90,10 @@ func (s *configService) GetKeyValStorageProvider() string {
 
 func (s *configService) GetFileStorageProvider() string {
 	return s.FileStorageProvider
+}
+
+func (s *configService) GetIndexProvider() string {
+	return s.IndexProvider
 }
 
 func (s *configService) GetCloudStorage(provider string) CloudStorage {

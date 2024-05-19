@@ -1,20 +1,22 @@
 package soicat
 
-import "github.com/guregu/null"
-
 type Camera struct {
-	ID                 string    `json:"id"`
-	Name               string    `json:"name"`
-	RtspURL            string    `json:"rtspUrl"`
-	IsAnalytics        bool      `json:"isAnalytics"`
-	Analytics          []string  `json:"Analytics"`
-	Capturer           string    `json:"capturer"`
-	RecordingState     string    `json:"recordingState"` // recording, idle,
-	ClientState        string    `json:"clientState"`    // started, stopped, paused
-	LastHeartBeat      null.Time `json:"lastHeartBeat"`
-	CaptureWidth       int       `json:"captureWidth"`
-	CaptureHeight      int       `json:"captureHeight"`
-	PreRecording       int64     `json:"preRecording"`
-	MaxLengthRecording int64     `json:"maxLengthRecording"`
-	Timezone           string    `json:"timezone"`
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	Region             string   `json:"region"`   // Home Office
+	Location           string   `json:"location"` // B03W-E1 or C03E-EXEC
+	Priority           string   `json:"priority"` // ATM, Critical Infrastructure, Transportation
+	RtspURL            string   `json:"rtspUrl"`
+	Analytics          []string `json:"analytics"`
+	AlertTypes         []string `json:"alertTypes"`
+	MediaIndexerTypes  []string `json:"mediaIndexerTypes"`
+	Capturer           string   `json:"capturer"`
+	RecordingState     string   `json:"recordingState"`    // started, stopped, paused
+	RetentionDays      int      `json:"retentionDays"`     // days to keep initial recording clips
+	DeepRetentionDays  int      `json:"deepRetentionDays"` // days to keep subsequent recording clips
+	CaptureWidth       int      `json:"captureWidth"`
+	CaptureHeight      int      `json:"captureHeight"`
+	PreRecording       int64    `json:"preRecording"`
+	MaxLengthRecording int64    `json:"maxLengthRecording"`
+	Timezone           string   `json:"timezone"`
 }

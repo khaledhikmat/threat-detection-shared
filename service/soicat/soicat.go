@@ -2,20 +2,22 @@ package soicat
 
 import (
 	"fmt"
-	"time"
-
-	"github.com/guregu/null"
 )
 
 var cameras = []Camera{
 	{
 		ID:                 "100",
 		Name:               "Camera1",
+		Region:             "Home Office",
+		Location:           "B03W-E1",
+		Priority:           "ATM",
 		RtspURL:            "rtsp://admin:gooze_bumbs@192.168.1.206:554/cam/realmonitor?channel=1&subtype=0",
-		IsAnalytics:        true,
-		Analytics:          []string{"weapon-detection", "fire-detection"},
+		Analytics:          []string{"weapon", "fire"},
+		AlertTypes:         []string{"ccure", "snow", "pers", "slack"},
+		MediaIndexerTypes:  []string{"dynamodb"},
 		Capturer:           "dead-capturer",
-		LastHeartBeat:      null.TimeFrom(time.Now().Add(-5 * time.Minute)),
+		RetentionDays:      1,
+		DeepRetentionDays:  30,
 		CaptureWidth:       500,
 		CaptureHeight:      500,
 		MaxLengthRecording: 3,

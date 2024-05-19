@@ -62,7 +62,17 @@ type sqllite struct {
 }
 
 func (p *sqllite) NewClip(clip equates.RecordingClip) error {
-	_, err := p.db.Exec(`INSERT INTO clips 
+	bts, err := time.Parse(equates.Layout, clip.BeginTime)
+	if err != nil {
+		return err
+	}
+
+	ets, err := time.Parse(equates.Layout, clip.EndTime)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.db.Exec(`INSERT INTO clips 
 	VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`,
 		clip.ID,
 		clip.LocalReference,
@@ -74,8 +84,8 @@ func (p *sqllite) NewClip(clip equates.RecordingClip) error {
 		clip.Location,
 		clip.Priority,
 		clip.Frames,
-		clip.BeginTime,
-		clip.EndTime,
+		bts,
+		ets,
 		clip.PrevClip,
 		strings.Join(clip.Analytics, ","),
 		strings.Join(clip.AlertTypes, ","),

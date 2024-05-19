@@ -14,7 +14,7 @@ var cameras = []Camera{
 		RtspURL:            "rtsp://admin:gooze_bumbs@192.168.1.206:554/cam/realmonitor?channel=1&subtype=0",
 		Analytics:          []string{"weapon", "fire"},
 		AlertTypes:         []string{"ccure", "snow", "pers", "slack"},
-		MediaIndexerTypes:  []string{"dynamodb"},
+		MediaIndexerTypes:  []string{"database"},
 		Capturer:           "dead-capturer",
 		RetentionDays:      1,
 		DeepRetentionDays:  30,

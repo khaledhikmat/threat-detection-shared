@@ -175,7 +175,11 @@ func makeS3Client(ctx context.Context) error {
 }
 
 func makeBucketName(camera string) string {
-	return fmt.Sprintf("%s-%s", bucketPrefix, strings.ToLower(camera))
+	prefix := bucketPrefix
+	if os.Getenv("AWS_BUCKET_PREFIX") != "" {
+		prefix = os.Getenv("AWS_BUCKET_PREFIX")
+	}
+	return fmt.Sprintf("%s-%s", prefix, strings.ToLower(camera))
 }
 
 func makeKeyName(camera, id string) string {

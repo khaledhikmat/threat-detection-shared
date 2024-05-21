@@ -3,6 +3,7 @@ package persistence
 import (
 	"database/sql"
 	_ "embed"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -28,31 +29,39 @@ var createClipAlertTypesTable string
 var createClipIndexTypesTable string
 
 func newSqllite() IService {
+	fmt.Printf("***** let us try to create a file at %s\n", os.Getenv("SQLLITE_FILE_PATH"))
 	db, err := sql.Open("sqlite3", os.Getenv("SQLLITE_FILE_PATH"))
 	if err != nil {
+		fmt.Printf("***** 😢 error creating a db %v\n", err)
 		panic(err)
 	}
 
 	if _, err := db.Exec(createClipTable); err != nil {
+		fmt.Printf("***** 😢 error creating clips table %v\n", err)
 		panic(err)
 	}
 
 	if _, err := db.Exec(createClipTagsTable); err != nil {
+		fmt.Printf("***** 😢 error creating clip tags table %v\n", err)
 		panic(err)
 	}
 
 	if _, err := db.Exec(createClipAnalyticsTable); err != nil {
+		fmt.Printf("***** 😢 error creating clip analytics table %v\n", err)
 		panic(err)
 	}
 
 	if _, err := db.Exec(createClipAlertTypesTable); err != nil {
+		fmt.Printf("***** 😢 error creating clip alert types table %v\n", err)
 		panic(err)
 	}
 
 	if _, err := db.Exec(createClipIndexTypesTable); err != nil {
+		fmt.Printf("***** 😢 error creating clip index types table %v\n", err)
 		panic(err)
 	}
 
+	fmt.Printf("***** created tables successfully 😎\n")
 	return &sqllite{
 		db: db,
 	}
@@ -63,13 +72,16 @@ type sqllite struct {
 }
 
 func (p *sqllite) NewClip(clip equates.RecordingClip) error {
+	fmt.Printf("***** 💪 inserting a new clip with id %s\n", clip.ID)
 	bts, err := time.Parse(equates.Layout, clip.BeginTime)
 	if err != nil {
+		fmt.Printf("***** 😢 error creating a new clip %v\n", err)
 		return err
 	}
 
 	ets, err := time.Parse(equates.Layout, clip.EndTime)
 	if err != nil {
+		fmt.Printf("***** 😢 error parsing a new clip %v\n", err)
 		return err
 	}
 
@@ -96,7 +108,10 @@ func (p *sqllite) NewClip(clip equates.RecordingClip) error {
 		clip.AlertsCount,
 	)
 	if err != nil {
-		return err
+		fmt.Printf("***** 😢 error inserting a new clip %v\n", err)
+		// https://stackoverflow.com/questions/73444639/duplications-in-running-dapr-events
+		// Must be idempotent
+		return fmt.Errorf("IGNORE error")
 	}
 
 	for _, tag := range clip.Tags {
@@ -106,6 +121,7 @@ func (p *sqllite) NewClip(clip equates.RecordingClip) error {
 			tag,
 			time.Now())
 		if err != nil {
+			fmt.Printf("***** 😢 error inserting a new clip tag %v\n", err)
 			return err
 		}
 	}
@@ -117,6 +133,7 @@ func (p *sqllite) NewClip(clip equates.RecordingClip) error {
 			analytic,
 			time.Now())
 		if err != nil {
+			fmt.Printf("***** 😢 error inserting a new clip analytic %v\n", err)
 			return err
 		}
 	}
@@ -128,6 +145,7 @@ func (p *sqllite) NewClip(clip equates.RecordingClip) error {
 			alert,
 			time.Now())
 		if err != nil {
+			fmt.Printf("***** 😢 error inserting a new clip alert type %v\n", err)
 			return err
 		}
 	}
@@ -139,10 +157,12 @@ func (p *sqllite) NewClip(clip equates.RecordingClip) error {
 			idx,
 			time.Now())
 		if err != nil {
+			fmt.Printf("***** 😢 error inserting a new clip index type %v\n", err)
 			return err
 		}
 	}
 
+	fmt.Printf("***** 😀 inserted a clip successfully 😎\n")
 	return nil
 }
 

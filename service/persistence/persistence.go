@@ -7,11 +7,13 @@ import (
 	"github.com/khaledhikmat/threat-detection-shared/service/config"
 )
 
-var providers = map[string]IService{
-	"sqllite": newSqllite(),
-}
+var providers map[string]IService
 
 func New(cfgsvc config.IService) IService {
+	providers = map[string]IService{
+		"sqllite": newSqllite(),
+	}
+
 	return &persistence{
 		CfgSvc: cfgsvc,
 	}

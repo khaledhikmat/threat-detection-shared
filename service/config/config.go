@@ -1,74 +1,83 @@
 package config
 
 import (
-	"embed"
-	"encoding/json"
-	"fmt"
 	"os"
-	"strings"
 )
 
 const (
-	RuntimeModeKey  = "THREAT_DETECTION_MODE"
-	RuntimeModeDapr = "dapr"
-	RuntimeModeAWS  = "aws"
-
-	AIModelKey          = "AI_MODEL"
-	AlertTypeKey        = "ALERT_TYPE"
-	MediaIndexerTypeKey = "MEDIA_INDEXER_TYPE"
-	IndexerTypeKey      = "INDEXER_TYPE"
+	runtimeModeKey = "RUN_TIME_MODE"
 )
 
+var providers map[string]IService
+
 type configService struct {
-	Capturer Capturer  `json:"capturer"`
-	FsData   *embed.FS `json:"-"`
 }
 
-func New(fs *embed.FS) IService {
-	p := configService{
-		FsData: fs,
+func New() IService {
+	providers = map[string]IService{
+		"dapr": newEnvVars(),
+		"aws":  newEnvVars(),
 	}
 
-	err := json.Unmarshal(read(p.FsData, fmt.Sprintf("data/%s.json", "dev")), &p)
-	if err != nil {
-		panic(err)
-	}
+	p := configService{}
 
 	return &p
 }
 
 func (s *configService) GetRuntime() string {
-	return strings.ToLower(os.Getenv(RuntimeModeKey))
+	return os.Getenv(runtimeModeKey)
 }
 
 func (s *configService) GetSupportedAIModel() string {
-	return os.Getenv(AIModelKey)
+	r, ok := providers[s.GetRuntime()]
+	if !ok {
+		return ""
+	}
+
+	return r.GetSupportedAIModel()
 }
 
 func (s *configService) GetSupportedAlertType() string {
-	return os.Getenv(AlertTypeKey)
+	r, ok := providers[s.GetRuntime()]
+	if !ok {
+		return ""
+	}
+
+	return r.GetSupportedAlertType()
 }
 
 func (s *configService) GetSupportedMediaIndexType() string {
-	return os.Getenv(MediaIndexerTypeKey)
+	r, ok := providers[s.GetRuntime()]
+	if !ok {
+		return ""
+	}
+
+	return r.GetSupportedMediaIndexType()
 }
 
 func (s *configService) GetIndexerType() string {
-	return os.Getenv(IndexerTypeKey)
+	r, ok := providers[s.GetRuntime()]
+	if !ok {
+		return ""
+	}
+
+	return r.GetIndexerType()
 }
 
 func (s *configService) GetCapturer() Capturer {
-	return s.Capturer
+	r, ok := providers[s.GetRuntime()]
+	if !ok {
+		return Capturer{}
+	}
+
+	return r.GetCapturer()
 }
 
 func (s *configService) Finalize() {
-}
-
-func read(fs *embed.FS, file string) []byte {
-	fd, err := fs.ReadFile(file)
-	if err != nil {
-		fd, _ = fs.ReadFile("data/dev.json")
+	r, ok := providers[s.GetRuntime()]
+	if !ok {
+		return
 	}
 
-	return fd
+	r.Finalize()
 }

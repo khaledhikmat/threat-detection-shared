@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/khaledhikmat/threat-detection-shared/equates"
+	"github.com/khaledhikmat/threat-detection-shared/models"
 )
 
 //go:embed sql/createclipstable4lite.sql
@@ -71,15 +71,15 @@ type sqllite struct {
 	db *sql.DB
 }
 
-func (p *sqllite) NewClip(clip equates.RecordingClip) error {
+func (p *sqllite) NewClip(clip models.RecordingClip) error {
 	fmt.Printf("***** 💪 inserting a new clip with id %s\n", clip.ID)
-	bts, err := time.Parse(equates.Layout, clip.BeginTime)
+	bts, err := time.Parse(models.Layout, clip.BeginTime)
 	if err != nil {
 		fmt.Printf("***** 😢 error creating a new clip %v\n", err)
 		return err
 	}
 
-	ets, err := time.Parse(equates.Layout, clip.EndTime)
+	ets, err := time.Parse(models.Layout, clip.EndTime)
 	if err != nil {
 		fmt.Printf("***** 😢 error parsing a new clip %v\n", err)
 		return err
@@ -188,7 +188,7 @@ func (p *sqllite) RetrieveClipCount(lastDays int) (int, error) {
 	return count, nil
 }
 
-func (p *sqllite) RetrieveClipsStatsByRegion(lastDays int) ([]equates.ClipStats, error) {
+func (p *sqllite) RetrieveClipsStatsByRegion(lastDays int) ([]models.ClipStats, error) {
 	q := `SELECT region, COUNT(DISTINCT camera) as cameras, COUNT(*) as clips, 
 	SUM(frames) as frames, SUM(tagsCount) as tags, SUM(alertsCount) as alerts
 	FROM clips
@@ -196,18 +196,18 @@ func (p *sqllite) RetrieveClipsStatsByRegion(lastDays int) ([]equates.ClipStats,
 	GROUP BY region;`
 	rows, err := p.db.Query(q, lastDays)
 	if err != nil {
-		return []equates.ClipStats{}, err
+		return []models.ClipStats{}, err
 	}
 	defer rows.Close()
 
-	stats := []equates.ClipStats{}
+	stats := []models.ClipStats{}
 	for rows.Next() {
 		var region string
 		var cameras, clips, frames, tags, alerts int
 		if err := rows.Scan(&region, &cameras, &clips, &frames, &tags, &alerts); err != nil {
-			return []equates.ClipStats{}, err
+			return []models.ClipStats{}, err
 		}
-		stats = append(stats, equates.ClipStats{
+		stats = append(stats, models.ClipStats{
 			Region:  region,
 			Cameras: cameras,
 			Clips:   clips,
@@ -220,23 +220,23 @@ func (p *sqllite) RetrieveClipsStatsByRegion(lastDays int) ([]equates.ClipStats,
 	return stats, nil
 }
 
-func (p *sqllite) RetrieveClipsByRegion(region string, page, pageSize int) ([]equates.RecordingClip, error) {
+func (p *sqllite) RetrieveClipsByRegion(region string, page, pageSize int) ([]models.RecordingClip, error) {
 	q := `SELECT id, cloudReference, storageProvider, capturer, camera, region, location, priority, frames, tagsCount, alertsCount 
 	FROM clips 
 	WHERE region = ? LIMIT ? OFFSET ?;`
 	rows, err := p.db.Query(q, region, pageSize, page*pageSize)
 	if err != nil {
-		return []equates.RecordingClip{}, err
+		return []models.RecordingClip{}, err
 	}
 	defer rows.Close()
 
-	clips := []equates.RecordingClip{}
+	clips := []models.RecordingClip{}
 	for rows.Next() {
-		var clip equates.RecordingClip
+		var clip models.RecordingClip
 		if err := rows.Scan(&clip.ID, &clip.CloudReference, &clip.StorageProvider, &clip.Capturer,
 			&clip.Camera, &clip.Region, &clip.Location, &clip.Priority,
 			&clip.Frames, &clip.TagsCount, &clip.AlertsCount); err != nil {
-			return []equates.RecordingClip{}, err
+			return []models.RecordingClip{}, err
 		}
 		clips = append(clips, clip)
 	}
@@ -272,28 +272,28 @@ func (p *sqllite) RetrieveTopAlertTypes(top int, lastDays int) ([]string, error)
 	return []string{}, nil
 }
 
-func (p *sqllite) RetrieveClipsByTag(tag string, lastDays int) ([]equates.RecordingClip, error) {
-	return []equates.RecordingClip{}, nil
+func (p *sqllite) RetrieveClipsByTag(tag string, lastDays int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
 }
 
-func (p *sqllite) RetrieveClipsByTags(tags []string, lastDays int) ([]equates.RecordingClip, error) {
-	return []equates.RecordingClip{}, nil
+func (p *sqllite) RetrieveClipsByTags(tags []string, lastDays int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
 }
 
-func (p *sqllite) RetrieveClipsByAnalytic(analytic string, lastDays int) ([]equates.RecordingClip, error) {
-	return []equates.RecordingClip{}, nil
+func (p *sqllite) RetrieveClipsByAnalytic(analytic string, lastDays int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
 }
 
-func (p *sqllite) RetrieveClipsByAnalytics(analytics []string, lastDays int) ([]equates.RecordingClip, error) {
-	return []equates.RecordingClip{}, nil
+func (p *sqllite) RetrieveClipsByAnalytics(analytics []string, lastDays int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
 }
 
-func (p *sqllite) RetrieveClipsByAlertType(typ string, lastDays int) ([]equates.RecordingClip, error) {
-	return []equates.RecordingClip{}, nil
+func (p *sqllite) RetrieveClipsByAlertType(typ string, lastDays int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
 }
 
-func (p *sqllite) RetrieveClipsByAlertTypes(typs []string, lastDays int) ([]equates.RecordingClip, error) {
-	return []equates.RecordingClip{}, nil
+func (p *sqllite) RetrieveClipsByAlertTypes(typs []string, lastDays int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
 }
 
 func (p *sqllite) Finalize() {

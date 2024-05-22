@@ -6,7 +6,7 @@ import (
 
 	dapr "github.com/dapr/go-sdk/client"
 
-	"github.com/khaledhikmat/threat-detection-shared/equates"
+	"github.com/khaledhikmat/threat-detection-shared/models"
 	"github.com/khaledhikmat/threat-detection-shared/service/config"
 )
 
@@ -28,17 +28,17 @@ type publisher struct {
 	CfgSvc     config.IService
 }
 
-func (s *publisher) PublishRecordingClip(ctx context.Context, pubsub, topic string, clip equates.RecordingClip) error {
-	return publish[equates.RecordingClip](ctx, s.CfgSvc, s.DaprClient, pubsub, topic, clip)
+func (s *publisher) PublishRecordingClip(ctx context.Context, pubsub, topic string, clip models.RecordingClip) error {
+	return publish[models.RecordingClip](ctx, s.CfgSvc, s.DaprClient, pubsub, topic, clip)
 }
 
 func (s *publisher) Finalize() {
 }
 
 func publish[T any](ctx context.Context, cfgsvc config.IService, client dapr.Client, pubsub, topic string, entity T) error {
-	fn, ok := providerFunctions[cfgsvc.GetPublisherProvider()]
+	fn, ok := providerFunctions[cfgsvc.GetRuntime()]
 	if !ok {
-		return fmt.Errorf("provider %s not supported", cfgsvc.GetPublisherProvider())
+		return fmt.Errorf("provider %s not supported", cfgsvc.GetRuntime())
 	}
 
 	return fn(ctx, cfgsvc, client, pubsub, topic, entity)

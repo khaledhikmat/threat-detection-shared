@@ -1,16 +1,20 @@
 package config
 
 type IService interface {
-	IsDapr() bool
-	IsDiagrid() bool
+	// Runtime environment
+	GetRuntime() string
+
+	// Model Invoker type i.e. weapon, fire, etc
 	GetSupportedAIModel() string
+	// Alert Notifier type i.e. ccure, snow, pers, slack, email, etc
 	GetSupportedAlertType() string
+	// Alert Media Indexer type i.e. database, search service, etc
 	GetSupportedMediaIndexType() string
+	// Indexer type i.e. sqllite, AWS rds, etc
+	GetIndexerType() string
+
+	// Capturer configuration
 	GetCapturer() Capturer
-	GetPublisherProvider() string
-	GetKeyValStorageProvider() string
-	GetFileStorageProvider() string
-	GetIndexProvider() string
-	GetCloudStorage(provider string) CloudStorage
+
 	Finalize()
 }

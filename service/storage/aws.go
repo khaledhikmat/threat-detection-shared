@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/khaledhikmat/threat-detection-shared/equates"
+	"github.com/khaledhikmat/threat-detection-shared/models"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 
 var s3Client *s3.Client
 
-func storeClipViaAWS(ctx context.Context, clip equates.RecordingClip) (string, error) {
+func storeClipViaAWS(ctx context.Context, clip models.RecordingClip) (string, error) {
 	err := makeS3Client(ctx)
 	if err != nil {
 		return "", err
@@ -56,7 +56,7 @@ func storeClipViaAWS(ctx context.Context, clip equates.RecordingClip) (string, e
 	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key), nil
 }
 
-func retrieveClipFromAWS(ctx context.Context, clip equates.RecordingClip) ([]byte, error) {
+func retrieveClipFromAWS(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
 	err := makeS3Client(ctx)
 	if err != nil {
 		return []byte{}, err
@@ -85,7 +85,7 @@ func retrieveClipFromAWS(ctx context.Context, clip equates.RecordingClip) ([]byt
 	return b, nil
 }
 
-func downloadClipFromAWS(ctx context.Context, clip equates.RecordingClip) ([]byte, error) {
+func downloadClipFromAWS(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
 	err := makeS3Client(ctx)
 	if err != nil {
 		return []byte{}, err

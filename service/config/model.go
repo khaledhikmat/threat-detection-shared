@@ -6,8 +6,3 @@ type Capturer struct {
 	RecordingsFolder string `json:"recordingsFolder"`
 	SamplesFolder    string `json:"samplesFolder"`
 }
-
-type CloudStorage struct {
-	AccessKeyEnvVar string `json:"accessKeyEnvVar"`
-	AccessKey       string `json:"accessKey"`
-}

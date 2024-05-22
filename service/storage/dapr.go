@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 
 	dapr "github.com/dapr/go-sdk/client"
 
@@ -10,14 +9,6 @@ import (
 )
 
 func storeKeyValueViaDapr(ctx context.Context, cfgsvc config.IService, client dapr.Client, store, key, value string) error {
-	if !cfgsvc.IsDapr() && !cfgsvc.IsDiagrid() {
-		return nil
-	}
-
-	if (cfgsvc.IsDapr() || cfgsvc.IsDiagrid()) && client == nil {
-		return fmt.Errorf("Dapr client is nil")
-	}
-
 	return client.SaveState(ctx,
 		store,
 		key,

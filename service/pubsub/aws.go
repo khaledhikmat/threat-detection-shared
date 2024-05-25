@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
@@ -47,21 +48,18 @@ type awsPubsub struct {
 }
 
 func (s *awsPubsub) CreateTopic(ctx context.Context, topicName string) (string, error) {
-	// List all topics
-	resp, err := s.SnsClient.ListTopics(ctx, &sns.ListTopicsInput{})
-	if err != nil {
-		return "", fmt.Errorf("failed to list topics: %w", err)
+	// Locate topic ARN fron its provided name
+	arn, err := s.topicARNFromName(ctx, topicName)
+	if err == nil {
+		return arn, nil
 	}
 
-	// Check if the topic already exists
-	for _, t := range resp.Topics {
-
-		if *t.TopicArn == topicName {
-			// The topic already exists, return its ARN
-			return *t.TopicArn, nil
-		}
+	// For higher environments, we expect the topic to already exist
+	if s.CfgSvc.GetRuntimeEnv() != "local" {
+		return arn, err
 	}
 
+	// In local environment, we create the topic if it doesn't exist
 	fmt.Printf("***** Creating topic %s\n", topicName)
 
 	// If the topic doesn't exist, create it
@@ -80,11 +78,33 @@ func (s *awsPubsub) CreateQueue(ctx context.Context, queueName, topicARN string)
 	queueURL := ""
 	newQueue := false
 
-	// Try to get the URL of the queue
+	// Try to get the URL of the queue from its name
 	resp, err := s.SqsClient.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
 		QueueName: aws.String(queueName),
 	})
 
+	// For higher environments, we expect the queue to already exist
+	if s.CfgSvc.GetRuntimeEnv() != "local" {
+		if err != nil {
+			return "", "", err
+		}
+
+		queueURL := *resp.QueueUrl
+
+		// Using the queue URL, Get the attributes of the queue so we can get its ARN
+		respAttributes, err := s.SqsClient.GetQueueAttributes(ctx, &sqs.GetQueueAttributesInput{
+			QueueUrl:       aws.String(queueURL),
+			AttributeNames: []sqstypes.QueueAttributeName{sqstypes.QueueAttributeNameQueueArn},
+		})
+		if err != nil {
+			return "", "", fmt.Errorf("failed to get queue attributes: %w", err)
+		}
+
+		queueARN := respAttributes.Attributes[string(sqstypes.QueueAttributeNameQueueArn)]
+		return queueURL, queueARN, nil
+	}
+
+	// In local environment, we create the queue if it doesn't exist
 	if err != nil {
 		var queueDoesNotExist *sqstypes.QueueDoesNotExist
 		if errors.As(err, &queueDoesNotExist) {
@@ -178,6 +198,7 @@ func (s *awsPubsub) PublishRecordingClip(ctx context.Context, _, topicArn string
 	return err
 }
 
+// SNS Messages arrive with a wrapper, so we need to extract the actual message
 type snsMessage struct {
 	Message string `json:"Message"`
 }
@@ -245,6 +266,27 @@ func (s *awsPubsub) Subscribe(ctx context.Context, topicArn, queueURL, queueArn 
 }
 
 func (s *awsPubsub) Finalize() {
+}
+
+func (s *awsPubsub) topicARNFromName(ctx context.Context, topicName string) (string, error) {
+	resp, err := s.SnsClient.ListTopics(ctx, &sns.ListTopicsInput{})
+	if err != nil {
+		return "", fmt.Errorf("failed to list topics: %w", err)
+	}
+
+	// Check if the topic already exists
+	for _, t := range resp.Topics {
+		// Extract the name from the ARN
+		arnParts := strings.Split(*t.TopicArn, ":")
+		existingTopicName := arnParts[len(arnParts)-1]
+
+		if existingTopicName == topicName {
+			// The topic already exists, return its ARN
+			return *t.TopicArn, nil
+		}
+	}
+
+	return "", fmt.Errorf("topic %s not found", topicName)
 }
 
 func makeSNSClient(ctx context.Context) (*sns.Client, error) {

@@ -8,11 +8,12 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/khaledhikmat/threat-detection-shared/models"
+	"github.com/khaledhikmat/threat-detection-shared/service/config"
 )
 
 const (
@@ -20,25 +21,40 @@ const (
 	bucketPrefix = "threat-detection"
 )
 
-var s3Client *s3.Client
-
-func storeClipViaAWS(ctx context.Context, clip models.RecordingClip) (string, error) {
-	err := makeS3Client(ctx)
+func NewAwsStorage(cfgsvc config.IService) IService {
+	s3, err := makeS3Client(context.Background())
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
+	return &awsStorage{
+		S3Client: s3,
+		CfgSvc:   cfgsvc,
+	}
+}
+
+type awsStorage struct {
+	S3Client *s3.Client
+	CfgSvc   config.IService
+}
+
+// Not supported in AWS yet
+func (s *awsStorage) StoreKeyValue(ctx context.Context, store, key, value string) error {
+	return nil
+}
+
+func (s *awsStorage) StoreRecordingClip(ctx context.Context, clip models.RecordingClip) (string, error) {
 	// Create a bucket for each camera if it doesn't exist
 	bucketName := makeBucketName(clip.Camera)
 	fmt.Printf("Bucket name: %s\n", bucketName)
-	bucketExists, err := bucketExists(ctx, bucketName)
+	bucketExists, err := s.bucketExists(ctx, bucketName)
 	if err != nil {
 		return "", err
 	}
 
 	fmt.Printf("Bucket exists: %t\n", bucketExists)
 	if !bucketExists {
-		err = createBucket(ctx, bucketName, region)
+		err = s.createBucket(ctx, bucketName, region)
 		if err != nil {
 			return "", err
 		}
@@ -47,7 +63,7 @@ func storeClipViaAWS(ctx context.Context, clip models.RecordingClip) (string, er
 	// Upoad the file to the bucket using a unique object key
 	fmt.Printf("Uploading a file to: %s\n", bucketName)
 	key := makeKeyName(clip.Camera, clip.ID)
-	err = uploadFile(ctx, bucketName, key, clip.LocalReference)
+	err = s.uploadFile(ctx, bucketName, key, clip.LocalReference)
 	if err != nil {
 		return "", err
 	}
@@ -56,16 +72,11 @@ func storeClipViaAWS(ctx context.Context, clip models.RecordingClip) (string, er
 	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key), nil
 }
 
-func retrieveClipFromAWS(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
-	err := makeS3Client(ctx)
-	if err != nil {
-		return []byte{}, err
-	}
-
+func (s *awsStorage) RetrieveRecordingClip(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
 	bucketName := makeBucketName(clip.Camera)
 	key := makeKeyName(clip.Camera, clip.ID)
 
-	result, err := s3Client.GetObject(ctx, &s3.GetObjectInput{
+	result, err := s.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(key),
 	})
@@ -85,21 +96,16 @@ func retrieveClipFromAWS(ctx context.Context, clip models.RecordingClip) ([]byte
 	return b, nil
 }
 
-func downloadClipFromAWS(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
-	err := makeS3Client(ctx)
-	if err != nil {
-		return []byte{}, err
-	}
-
+func (s *awsStorage) DownloadRecordingClip(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
 	bucketName := makeBucketName(clip.Camera)
 	key := makeKeyName(clip.Camera, clip.ID)
 
 	var partMiBs int64 = 10
-	downloader := manager.NewDownloader(s3Client, func(d *manager.Downloader) {
+	downloader := manager.NewDownloader(s.S3Client, func(d *manager.Downloader) {
 		d.PartSize = partMiBs * 1024 * 1024
 	})
 	buffer := manager.NewWriteAtBuffer([]byte{})
-	_, err = downloader.Download(ctx, buffer, &s3.GetObjectInput{
+	_, err := downloader.Download(ctx, buffer, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(key),
 	})
@@ -107,12 +113,16 @@ func downloadClipFromAWS(ctx context.Context, clip models.RecordingClip) ([]byte
 		fmt.Printf("Couldn't download large object from %v:%v. Here's why: %v\n",
 			bucketName, key, err)
 	}
+
 	return buffer.Bytes(), err
 }
 
+func (s *awsStorage) Finalize() {
+}
+
 // BucketExists checks whether a bucket exists in the current account.
-func bucketExists(ctx context.Context, bucketName string) (bool, error) {
-	_, err := s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
+func (s *awsStorage) bucketExists(ctx context.Context, bucketName string) (bool, error) {
+	_, err := s.S3Client.HeadBucket(ctx, &s3.HeadBucketInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
@@ -124,8 +134,8 @@ func bucketExists(ctx context.Context, bucketName string) (bool, error) {
 }
 
 // CreateBucket creates a bucket with the specified name in the specified Region.
-func createBucket(ctx context.Context, name string, region string) error {
-	_, err := s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
+func (s *awsStorage) createBucket(ctx context.Context, name string, region string) error {
+	_, err := s.S3Client.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(name),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
 			LocationConstraint: types.BucketLocationConstraint(region),
@@ -139,14 +149,14 @@ func createBucket(ctx context.Context, name string, region string) error {
 }
 
 // UploadFile reads from a file and puts the data into an object in a bucket.
-func uploadFile(ctx context.Context, bucketName string, objectKey string, fileName string) error {
+func (s *awsStorage) uploadFile(ctx context.Context, bucketName string, objectKey string, fileName string) error {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	_, err = s3Client.PutObject(ctx, &s3.PutObjectInput{
+	_, err = s.S3Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 		Body:   file,
@@ -158,20 +168,20 @@ func uploadFile(ctx context.Context, bucketName string, objectKey string, fileNa
 	return nil
 }
 
-func makeS3Client(ctx context.Context) error {
-	if s3Client == nil {
-		cfg, err := config.LoadDefaultConfig(ctx,
-			config.WithRegion(region),
-		)
+func makeS3Client(ctx context.Context) (*s3.Client, error) {
+	var client *s3.Client
 
-		if err != nil {
-			return err
-		}
+	cfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion(region),
+	)
 
-		s3Client = s3.NewFromConfig(cfg)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	client = s3.NewFromConfig(cfg)
+
+	return client, nil
 }
 
 func makeBucketName(camera string) string {

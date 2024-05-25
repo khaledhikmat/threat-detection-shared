@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 
 	dapr "github.com/dapr/go-sdk/client"
 
@@ -10,30 +9,8 @@ import (
 	"github.com/khaledhikmat/threat-detection-shared/service/config"
 )
 
-var providerClipStoreFunctions = map[string]func(ctx context.Context, clip models.RecordingClip) (string, error){
-	"dapr": storeClipViaAWS,
-	"aws":  storeClipViaAWS,
-}
-
-var providerClipRetrieveFunctions = map[string]func(ctx context.Context, clip models.RecordingClip) ([]byte, error){
-	"dapr": retrieveClipFromAWS,
-	"aws":  retrieveClipFromAWS,
-}
-
-var providerClipDownloadFunctions = map[string]func(ctx context.Context, clip models.RecordingClip) ([]byte, error){
-	"dapr": downloadClipFromAWS,
-	"aws":  downloadClipFromAWS,
-}
-
-var providerKeyValueStoreFunctions = map[string]func(ctx context.Context, cfgsvc config.IService, client dapr.Client, store, key, value string) error{
-	"dapr": storeKeyValueViaDapr,
-}
-
-func New(c dapr.Client, cfgsvc config.IService) IService {
-	return &storage{
-		DaprClient: c,
-		CfgSvc:     cfgsvc,
-	}
+func NewStorage() IService {
+	return &storage{}
 }
 
 type storage struct {
@@ -41,40 +18,20 @@ type storage struct {
 	CfgSvc     config.IService
 }
 
-func (s *storage) StoreKeyValue(ctx context.Context, store, key, value string) error {
-	fn, ok := providerKeyValueStoreFunctions[s.CfgSvc.GetRuntime()]
-	if !ok {
-		return fmt.Errorf("provider %s not supported", s.CfgSvc.GetRuntime())
-	}
-
-	return fn(ctx, s.CfgSvc, s.DaprClient, store, key, value)
+func (s *storage) StoreKeyValue(_ context.Context, _, _, _ string) error {
+	return nil
 }
 
-func (s *storage) StoreRecordingClip(ctx context.Context, clip models.RecordingClip) (string, error) {
-	fn, ok := providerClipStoreFunctions[s.CfgSvc.GetRuntime()]
-	if !ok {
-		return "", fmt.Errorf("provider %s not supported", s.CfgSvc.GetRuntime())
-	}
-
-	return fn(ctx, clip)
+func (s *storage) StoreRecordingClip(_ context.Context, _ models.RecordingClip) (string, error) {
+	return "", nil
 }
 
-func (s *storage) RetrieveRecordingClip(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
-	fn, ok := providerClipRetrieveFunctions[s.CfgSvc.GetRuntime()]
-	if !ok {
-		return []byte{}, fmt.Errorf("provider %s not supported", s.CfgSvc.GetRuntime())
-	}
-
-	return fn(ctx, clip)
+func (s *storage) RetrieveRecordingClip(_ context.Context, _ models.RecordingClip) ([]byte, error) {
+	return nil, nil
 }
 
-func (s *storage) DownloadRecordingClip(ctx context.Context, clip models.RecordingClip) ([]byte, error) {
-	fn, ok := providerClipDownloadFunctions[s.CfgSvc.GetRuntime()]
-	if !ok {
-		return []byte{}, fmt.Errorf("provider %s not supported", s.CfgSvc.GetRuntime())
-	}
-
-	return fn(ctx, clip)
+func (s *storage) DownloadRecordingClip(_ context.Context, _ models.RecordingClip) ([]byte, error) {
+	return nil, nil
 }
 
 func (s *storage) Finalize() {

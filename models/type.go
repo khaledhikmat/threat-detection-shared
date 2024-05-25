@@ -6,8 +6,7 @@ const (
 	ThreatDetectionStateStore = "threat-detection-statestore" // name must match config/redis-statestore.yaml
 	ThreatDetectionPubSub     = "threat-detection-pubsub"     // name must match config/redis-pubsub.yaml
 	RecordingsTopic           = "recordings-topic"
-	NotificationsTopic        = "notifications-topic"
-	AlertTopic                = "alert-topic"
+	AlertsTopic               = "alerts-topic"
 	MetadataTopic             = "metadata-topic"
 )
 

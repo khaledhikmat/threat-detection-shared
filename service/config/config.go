@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	runtimeEnvKey  = "RUN_TIME_ENV"
 	runtimeModeKey = "RUN_TIME_MODE"
 )
 
@@ -24,12 +25,16 @@ func New() IService {
 	return &p
 }
 
-func (s *configService) GetRuntime() string {
+func (s *configService) GetRuntimeEnv() string {
+	return os.Getenv(runtimeEnvKey)
+}
+
+func (s *configService) GetRuntimeMode() string {
 	return os.Getenv(runtimeModeKey)
 }
 
 func (s *configService) GetSupportedAIModel() string {
-	r, ok := providers[s.GetRuntime()]
+	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {
 		return ""
 	}
@@ -38,7 +43,7 @@ func (s *configService) GetSupportedAIModel() string {
 }
 
 func (s *configService) GetSupportedAlertType() string {
-	r, ok := providers[s.GetRuntime()]
+	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {
 		return ""
 	}
@@ -47,7 +52,7 @@ func (s *configService) GetSupportedAlertType() string {
 }
 
 func (s *configService) GetSupportedMediaIndexType() string {
-	r, ok := providers[s.GetRuntime()]
+	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {
 		return ""
 	}
@@ -56,7 +61,7 @@ func (s *configService) GetSupportedMediaIndexType() string {
 }
 
 func (s *configService) GetIndexerType() string {
-	r, ok := providers[s.GetRuntime()]
+	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {
 		return ""
 	}
@@ -65,7 +70,7 @@ func (s *configService) GetIndexerType() string {
 }
 
 func (s *configService) GetCapturer() Capturer {
-	r, ok := providers[s.GetRuntime()]
+	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {
 		return Capturer{}
 	}
@@ -74,7 +79,7 @@ func (s *configService) GetCapturer() Capturer {
 }
 
 func (s *configService) Finalize() {
-	r, ok := providers[s.GetRuntime()]
+	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {
 		return
 	}

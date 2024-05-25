@@ -2,7 +2,8 @@ package config
 
 type IService interface {
 	// Runtime environment
-	GetRuntime() string
+	GetRuntimeEnv() string
+	GetRuntimeMode() string
 
 	// Model Invoker type i.e. weapon, fire, etc
 	GetSupportedAIModel() string

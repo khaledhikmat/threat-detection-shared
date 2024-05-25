@@ -26,7 +26,11 @@ func newEnvVars() IService {
 type envVarsService struct {
 }
 
-func (s *envVarsService) GetRuntime() string {
+func (s *envVarsService) GetRuntimeEnv() string {
+	return os.Getenv(runtimeEnvKey)
+}
+
+func (s *envVarsService) GetRuntimeMode() string {
 	return os.Getenv(runtimeModeKey)
 }
 

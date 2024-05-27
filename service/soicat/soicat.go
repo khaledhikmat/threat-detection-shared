@@ -8,7 +8,7 @@ var cameras = []Camera{
 	{
 		ID:                 "100",
 		Name:               "Camera1",
-		Region:             "Home Office",
+		Region:             "Home_Office",
 		Location:           "B03W-E1",
 		Priority:           "ATM",
 		RtspURL:            "rtsp://admin:gooze_bumbs@192.168.1.206:554/cam/realmonitor?channel=1&subtype=0",

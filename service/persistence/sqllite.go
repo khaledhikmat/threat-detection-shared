@@ -188,6 +188,11 @@ func (p *sqllite) RetrieveClipCount(lastDays int) (int, error) {
 	return count, nil
 }
 
+func (p *sqllite) RetrieveAlertedClips(top, lastPeriods int) ([]models.RecordingClip, error) {
+	return []models.RecordingClip{}, nil
+
+}
+
 func (p *sqllite) RetrieveClipsStatsByRegion(lastDays int) ([]models.ClipStats, error) {
 	q := `SELECT region, COUNT(DISTINCT camera) as cameras, COUNT(*) as clips, 
 	SUM(frames) as frames, SUM(tagsCount) as tags, SUM(alertsCount) as alerts
@@ -220,7 +225,7 @@ func (p *sqllite) RetrieveClipsStatsByRegion(lastDays int) ([]models.ClipStats, 
 	return stats, nil
 }
 
-func (p *sqllite) RetrieveClipsByRegion(region string, page, pageSize int) ([]models.RecordingClip, error) {
+func (p *sqllite) RetrieveClipsByRegion(region string, lastPeriods, page, pageSize int) ([]models.RecordingClip, error) {
 	q := `SELECT id, cloudReference, storageProvider, capturer, camera, region, location, priority, frames, tagsCount, alertsCount 
 	FROM clips 
 	WHERE region = ? LIMIT ? OFFSET ?;`

@@ -51,13 +51,22 @@ func (p *persistence) RetrieveClipsStatsByRegion(lastDays int) ([]models.ClipSta
 	return r.RetrieveClipsStatsByRegion(lastDays)
 }
 
-func (p *persistence) RetrieveClipsByRegion(region string, page, pageSize int) ([]models.RecordingClip, error) {
+func (p *persistence) RetrieveAlertedClips(top, lastPeriods int) ([]models.RecordingClip, error) {
 	r, ok := providers[p.CfgSvc.GetIndexerType()]
 	if !ok {
 		return []models.RecordingClip{}, fmt.Errorf("provider %s not supported", p.CfgSvc.GetIndexerType())
 	}
 
-	return r.RetrieveClipsByRegion(region, page, pageSize)
+	return r.RetrieveAlertedClips(top, lastPeriods)
+}
+
+func (p *persistence) RetrieveClipsByRegion(region string, lastPeriods, page, pageSize int) ([]models.RecordingClip, error) {
+	r, ok := providers[p.CfgSvc.GetIndexerType()]
+	if !ok {
+		return []models.RecordingClip{}, fmt.Errorf("provider %s not supported", p.CfgSvc.GetIndexerType())
+	}
+
+	return r.RetrieveClipsByRegion(region, lastPeriods, page, pageSize)
 }
 
 func (p *persistence) RetrieveTopCapturers(top int, lastDays int) ([]string, error) {

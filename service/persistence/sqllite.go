@@ -29,6 +29,13 @@ var createClipAlertTypesTable string
 var createClipIndexTypesTable string
 
 func newSqllite() IService {
+	if os.Getenv("SQLLITE_FILE_PATH") == "" {
+		fmt.Printf("SQLLITE is not configured to run...exiting now!\n")
+		return &sqllite{
+			db: nil,
+		}
+	}
+
 	fmt.Printf("***** let us try to create a file at %s\n", os.Getenv("SQLLITE_FILE_PATH"))
 	db, err := sql.Open("sqlite3", os.Getenv("SQLLITE_FILE_PATH"))
 	if err != nil {

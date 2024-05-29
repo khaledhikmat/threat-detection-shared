@@ -256,6 +256,22 @@ func (p *sqllite) RetrieveClipsByRegion(region string, lastPeriods, page, pageSi
 	return clips, nil
 }
 
+func (p *sqllite) RetrieveClipByID(id string) (models.RecordingClip, error) {
+	q := `SELECT id, cloudReference, storageProvider, capturer, camera, region, location, priority, frames, tagsCount, alertsCount 
+	FROM clips 
+	WHERE id = ?;`
+	row := p.db.QueryRow(q, id)
+
+	var clip models.RecordingClip
+	if err := row.Scan(&clip.ID, &clip.CloudReference, &clip.StorageProvider, &clip.Capturer,
+		&clip.Camera, &clip.Region, &clip.Location, &clip.Priority,
+		&clip.Frames, &clip.TagsCount, &clip.AlertsCount); err != nil {
+		return models.RecordingClip{}, err
+	}
+
+	return clip, nil
+}
+
 func (p *sqllite) RetrieveTopCapturers(top int, lastDays int) ([]string, error) {
 	return []string{}, nil
 }

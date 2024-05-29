@@ -334,6 +334,27 @@ func (p *opensearch) RetrieveClipsByRegion(region string, lastPeriods, page, pag
 	return retrieveClips(payload)
 }
 
+func (p *opensearch) RetrieveClipByID(id string) (models.RecordingClip, error) {
+	payload := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match": map[string]interface{}{
+				"id": id,
+			},
+		},
+	}
+
+	clips, err := retrieveClips(payload)
+	if err != nil {
+		return models.RecordingClip{}, err
+	}
+
+	if len(clips) == 0 {
+		return models.RecordingClip{}, fmt.Errorf("clip with id %s not found", id)
+	}
+
+	return clips[0], nil
+}
+
 func (p *opensearch) RetrieveTopCapturers(top int, lastPeriods int) ([]string, error) {
 	return []string{}, nil
 }

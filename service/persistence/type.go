@@ -10,6 +10,7 @@ type IService interface {
 	RetrieveClipsStatsByRegion(lastPeriods int) ([]models.ClipStats, error)
 	RetrieveAlertedClips(top, lastPeriods int) ([]models.RecordingClip, error)
 	RetrieveClipsByRegion(region string, lastPeriods, page, pageSize int) ([]models.RecordingClip, error)
+	RetrieveClipByID(id string) (models.RecordingClip, error)
 
 	RetrieveTopCapturers(top int, lastPeriods int) ([]string, error)
 	RetrieveTopCameras(top int, lastPeriods int) ([]string, error)

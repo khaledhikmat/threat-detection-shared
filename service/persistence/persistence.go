@@ -51,6 +51,15 @@ func (p *persistence) RetrieveClipsStatsByRegion(lastDays int) ([]models.ClipSta
 	return r.RetrieveClipsStatsByRegion(lastDays)
 }
 
+func (p *persistence) RetrieveClipByID(id string) (models.RecordingClip, error) {
+	r, ok := providers[p.CfgSvc.GetIndexerType()]
+	if !ok {
+		return models.RecordingClip{}, fmt.Errorf("provider %s not supported", p.CfgSvc.GetIndexerType())
+	}
+
+	return r.RetrieveClipByID(id)
+}
+
 func (p *persistence) RetrieveAlertedClips(top, lastPeriods int) ([]models.RecordingClip, error) {
 	r, ok := providers[p.CfgSvc.GetIndexerType()]
 	if !ok {

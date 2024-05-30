@@ -80,21 +80,11 @@ type sqllite struct {
 
 func (p *sqllite) NewClip(clip models.RecordingClip) error {
 	fmt.Printf("***** 💪 inserting a new clip with id %s\n", clip.ID)
-	bts, err := time.Parse(models.Layout, clip.BeginTime)
-	if err != nil {
-		fmt.Printf("***** 😢 error creating a new clip %v\n", err)
-		return err
-	}
 
-	ets, err := time.Parse(models.Layout, clip.EndTime)
-	if err != nil {
-		fmt.Printf("***** 😢 error parsing a new clip %v\n", err)
-		return err
-	}
-
-	_, err = p.db.Exec(`INSERT INTO clips 
-	VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`,
+	_, err := p.db.Exec(`INSERT INTO clips 
+	VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`,
 		clip.ID,
+		clip.CreateTime,
 		clip.LocalReference,
 		clip.CloudReference,
 		clip.StorageProvider,
@@ -104,8 +94,14 @@ func (p *sqllite) NewClip(clip models.RecordingClip) error {
 		clip.Location,
 		clip.Priority,
 		clip.Frames,
-		bts,
-		ets,
+		clip.RecordingBeginTime,
+		clip.RecordingBeginTime,
+		clip.PublishTime,
+		clip.ModelInvocationBeginTime,
+		clip.ModelInvocationEndTime,
+		clip.AlertInvocationBeginTime,
+		clip.AlertInvocationEndTime,
+		clip.IndexTime,
 		clip.PrevClip,
 		strings.Join(clip.Analytics, ","),
 		strings.Join(clip.AlertTypes, ","),
@@ -113,6 +109,12 @@ func (p *sqllite) NewClip(clip models.RecordingClip) error {
 		strings.Join(clip.Tags, ","),
 		clip.TagsCount,
 		clip.AlertsCount,
+		clip.ModelInvoker,
+		clip.ClipType,
+		clip.RecordingDuration,
+		clip.ModelInvocationDuration,
+		clip.AlertInvocationDuration,
+		clip.CreateToIndexDuration,
 	)
 	if err != nil {
 		fmt.Printf("***** 😢 error inserting a new clip %v\n", err)

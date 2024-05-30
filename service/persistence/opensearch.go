@@ -82,7 +82,7 @@ func (p *opensearch) RetrieveClipCount(lastPeriods int) (int, error) {
 	payload := map[string]interface{}{
 		"query": map[string]interface{}{
 			"range": map[string]interface{}{
-				"timeStamp": map[string]interface{}{
+				"indexTime": map[string]interface{}{
 					"gte": fmt.Sprintf("now-%dm/m", lastPeriods),
 					"lte": "now/m",
 				},
@@ -112,7 +112,7 @@ func (p *opensearch) RetrieveClipsStatsByRegion(lastPeriods int) ([]models.ClipS
 				"must": []map[string]interface{}{
 					{
 						"range": map[string]interface{}{
-							"timeStamp": map[string]interface{}{
+							"indexTime": map[string]interface{}{
 								"gte": fmt.Sprintf("now-%dm/m", lastPeriods),
 								"lte": "now/m",
 							},
@@ -197,7 +197,7 @@ func (p *opensearch) RetrieveClipsStatsByRegion(lastPeriods int) ([]models.ClipS
 					"must": []map[string]interface{}{
 						{
 							"range": map[string]interface{}{
-								"timeStamp": map[string]interface{}{
+								"indexTime": map[string]interface{}{
 									"gte": fmt.Sprintf("now-%dm/m", lastPeriods),
 									"lte": "now/m",
 								},
@@ -274,7 +274,7 @@ func (p *opensearch) RetrieveAlertedClips(top, lastPeriods int) ([]models.Record
 					},
 					{
 						"range": map[string]interface{}{
-							"timeStamp": map[string]interface{}{
+							"indexTime": map[string]interface{}{
 								"gte": fmt.Sprintf("now-%dm/m", lastPeriods),
 								"lte": "now/m",
 							},
@@ -288,7 +288,7 @@ func (p *opensearch) RetrieveAlertedClips(top, lastPeriods int) ([]models.Record
 		},
 		"sort": []map[string]interface{}{
 			{
-				"timeStamp": map[string]interface{}{
+				"indexTime": map[string]interface{}{
 					"order": "desc",
 				},
 			},
@@ -310,7 +310,7 @@ func (p *opensearch) RetrieveClipsByRegion(region string, lastPeriods, page, pag
 					},
 					{
 						"range": map[string]interface{}{
-							"timeStamp": map[string]interface{}{
+							"indexTime": map[string]interface{}{
 								"gte": fmt.Sprintf("now-%dm/m", lastPeriods),
 								"lte": "now/m",
 							},
@@ -324,7 +324,7 @@ func (p *opensearch) RetrieveClipsByRegion(region string, lastPeriods, page, pag
 		},
 		"sort": []map[string]interface{}{
 			{
-				"timeStamp": map[string]interface{}{
+				"indexTime": map[string]interface{}{
 					"order": "desc",
 				},
 			},
@@ -456,12 +456,84 @@ func retrieveClips(payload map[string]interface{}) ([]models.RecordingClip, erro
 			continue
 		}
 
-		// Convert the timestamp to time.Time
-		timeStamp, ok := source["timeStamp"].(string)
+		// Convert the times to time.Time
+		createTime, ok := source["createTime"].(string)
 		if !ok {
 			continue
 		}
-		timeStampTime, err := time.Parse(time.RFC3339, timeStamp)
+		createTimeTime, err := time.Parse(time.RFC3339, createTime)
+		if err != nil {
+			continue
+		}
+
+		recordingBeginTime, ok := source["recordingBeginTime"].(string)
+		if !ok {
+			continue
+		}
+		recordingBeginTimeTime, err := time.Parse(time.RFC3339, recordingBeginTime)
+		if err != nil {
+			continue
+		}
+
+		recordingEndTime, ok := source["recordingEndTime"].(string)
+		if !ok {
+			continue
+		}
+		recordingEndTimeTime, err := time.Parse(time.RFC3339, recordingEndTime)
+		if err != nil {
+			continue
+		}
+
+		publishTime, ok := source["publishTime"].(string)
+		if !ok {
+			continue
+		}
+		publishTimeTime, err := time.Parse(time.RFC3339, publishTime)
+		if err != nil {
+			continue
+		}
+
+		modelInvocationBeginTime, ok := source["modelInvocationBeginTime"].(string)
+		if !ok {
+			continue
+		}
+		modelInvocationBeginTimeTime, err := time.Parse(time.RFC3339, modelInvocationBeginTime)
+		if err != nil {
+			continue
+		}
+
+		modelInvocationEndTime, ok := source["modelInvocationEndTime"].(string)
+		if !ok {
+			continue
+		}
+		modelInvocationEndTimeTime, err := time.Parse(time.RFC3339, modelInvocationEndTime)
+		if err != nil {
+			continue
+		}
+
+		alertInvocationBeginTime, ok := source["alertInvocationBeginTime"].(string)
+		if !ok {
+			continue
+		}
+		alertInvocationBeginTimeTime, err := time.Parse(time.RFC3339, alertInvocationBeginTime)
+		if err != nil {
+			continue
+		}
+
+		alertInvocationEndTime, ok := source["alertInvocationEndTime"].(string)
+		if !ok {
+			continue
+		}
+		alertInvocationEndTimeTime, err := time.Parse(time.RFC3339, alertInvocationEndTime)
+		if err != nil {
+			continue
+		}
+
+		indexTime, ok := source["indexTime"].(string)
+		if !ok {
+			continue
+		}
+		indexTimeTime, err := time.Parse(time.RFC3339, indexTime)
 		if err != nil {
 			continue
 		}
@@ -507,27 +579,39 @@ func retrieveClips(payload map[string]interface{}) ([]models.RecordingClip, erro
 		}
 
 		clip := models.RecordingClip{
-			ID:                source["id"].(string),
-			TimeStamp:         timeStampTime,
-			LocalReference:    source["localReference"].(string),
-			CloudReference:    source["cloudReference"].(string),
-			StorageProvider:   source["storageProvider"].(string),
-			Capturer:          source["capturer"].(string),
-			Camera:            source["camera"].(string),
-			CameraID:          int(source["cameraId"].(float64)),
-			Region:            source["region"].(string),
-			Location:          source["location"].(string),
-			Priority:          source["priority"].(string),
-			Frames:            int(source["frames"].(float64)),
-			BeginTime:         source["beginTime"].(string),
-			EndTime:           source["endTime"].(string),
-			PrevClip:          source["prevClip"].(string),
-			Analytics:         analyticsStr,
-			AlertTypes:        alertTypesStr,
-			MediaIndexerTypes: mediaIndexerTypesStr,
-			Tags:              tagsStr,
-			TagsCount:         int(source["tagsCount"].(float64)),
-			AlertsCount:       int(source["alertsCount"].(float64)),
+			ID:                       source["id"].(string),
+			CreateTime:               createTimeTime,
+			LocalReference:           source["localReference"].(string),
+			CloudReference:           source["cloudReference"].(string),
+			StorageProvider:          source["storageProvider"].(string),
+			Capturer:                 source["capturer"].(string),
+			Camera:                   source["camera"].(string),
+			CameraID:                 int(source["cameraId"].(float64)),
+			Region:                   source["region"].(string),
+			Location:                 source["location"].(string),
+			Priority:                 source["priority"].(string),
+			Frames:                   int(source["frames"].(float64)),
+			RecordingBeginTime:       recordingBeginTimeTime,
+			RecordingEndTime:         recordingEndTimeTime,
+			PublishTime:              publishTimeTime,
+			ModelInvocationBeginTime: modelInvocationBeginTimeTime,
+			ModelInvocationEndTime:   modelInvocationEndTimeTime,
+			AlertInvocationBeginTime: alertInvocationBeginTimeTime,
+			AlertInvocationEndTime:   alertInvocationEndTimeTime,
+			IndexTime:                indexTimeTime,
+			PrevClip:                 source["prevClip"].(string),
+			Analytics:                analyticsStr,
+			AlertTypes:               alertTypesStr,
+			MediaIndexerTypes:        mediaIndexerTypesStr,
+			Tags:                     tagsStr,
+			TagsCount:                int(source["tagsCount"].(float64)),
+			AlertsCount:              int(source["alertsCount"].(float64)),
+			ModelInvoker:             source["modelInvoker"].(string),
+			ClipType:                 int(source["clipType"].(float64)),
+			RecordingDuration:        int64(source["recordingDuration"].(float64)),
+			ModelInvocationDuration:  int64(source["modelInvocationDuration"].(float64)),
+			AlertInvocationDuration:  int64(source["alertInvocationDuration"].(float64)),
+			CreateToIndexDuration:    int64(source["createToIndexDuration"].(float64)),
 		}
 		clips = append(clips, clip)
 	}

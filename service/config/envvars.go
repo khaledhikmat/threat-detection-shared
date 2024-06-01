@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	otelProviderKey = "OTEL_PROVIDER"
+
 	aiModelKey          = "AI_MODEL"
 	alertTypeKey        = "ALERT_TYPE"
 	mediaIndexerTypeKey = "MEDIA_INDEXER_TYPE"
@@ -32,6 +34,10 @@ func (s *envVarsService) GetRuntimeEnv() string {
 
 func (s *envVarsService) GetRuntimeMode() string {
 	return os.Getenv(runtimeModeKey)
+}
+
+func (s *envVarsService) GetOtelProvider() string {
+	return os.Getenv(otelProviderKey)
 }
 
 func (s *envVarsService) GetSupportedAIModel() string {

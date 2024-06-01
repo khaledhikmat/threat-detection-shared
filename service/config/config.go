@@ -33,6 +33,15 @@ func (s *configService) GetRuntimeMode() string {
 	return os.Getenv(runtimeModeKey)
 }
 
+func (s *configService) GetOtelProvider() string {
+	r, ok := providers[s.GetRuntimeMode()]
+	if !ok {
+		return ""
+	}
+
+	return r.GetOtelProvider()
+}
+
 func (s *configService) GetSupportedAIModel() string {
 	r, ok := providers[s.GetRuntimeMode()]
 	if !ok {

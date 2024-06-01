@@ -5,6 +5,9 @@ type IService interface {
 	GetRuntimeEnv() string
 	GetRuntimeMode() string
 
+	// Otel Provider type i.e. aws, noop, etc
+	GetOtelProvider() string
+
 	// Model Invoker type i.e. weapon, fire, etc
 	GetSupportedAIModel() string
 	// Alert Notifier type i.e. ccure, snow, pers, slack, email, etc

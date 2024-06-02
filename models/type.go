@@ -17,6 +17,7 @@ type RecordingClip struct {
 	CreateTime               time.Time `json:"createTime"` // The time the clip was created
 	LocalReference           string    `json:"localReference"`
 	CloudReference           string    `json:"cloudReference"`
+	AlertReference           string    `json:"alertReference"`
 	StorageProvider          string    `json:"storageProvider"`
 	Capturer                 string    `json:"capturer"`
 	Camera                   string    `json:"camera"`

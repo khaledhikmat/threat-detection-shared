@@ -583,6 +583,7 @@ func retrieveClips(payload map[string]interface{}) ([]models.RecordingClip, erro
 			CreateTime:               createTimeTime,
 			LocalReference:           source["localReference"].(string),
 			CloudReference:           source["cloudReference"].(string),
+			AlertReference:           source["alertReference"].(string),
 			StorageProvider:          source["storageProvider"].(string),
 			Capturer:                 source["capturer"].(string),
 			Camera:                   source["camera"].(string),

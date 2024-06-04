@@ -338,7 +338,7 @@ func (p *opensearch) RetrieveClipByID(id string) (models.RecordingClip, error) {
 	payload := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
-				"id": id,
+				"_id": id,
 			},
 		},
 	}

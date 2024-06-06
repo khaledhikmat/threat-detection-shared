@@ -113,9 +113,14 @@ type soicat struct {
 }
 
 func (s *soicat) UpdateCamera(c Camera) error {
-	for idx, camera := range localCameras {
+	existingCameras, err := s.Cameras()
+	if err != nil {
+		return err
+	}
+
+	for idx, camera := range existingCameras {
 		if camera.Name == c.Name {
-			ptr := &localCameras[idx]
+			ptr := &existingCameras[idx]
 			(*ptr).Capturer = c.Capturer
 			return nil
 		}

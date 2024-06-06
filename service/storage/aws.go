@@ -189,9 +189,15 @@ func makeBucketName(camera string) string {
 	if os.Getenv("AWS_BUCKET_PREFIX") != "" {
 		prefix = os.Getenv("AWS_BUCKET_PREFIX")
 	}
-	return fmt.Sprintf("%s-%s", prefix, strings.ToLower(camera))
+	return fmt.Sprintf("%s-%s", prefix, makeCameraName(camera))
 }
 
 func makeKeyName(camera, id string) string {
-	return fmt.Sprintf("%s-%s", camera, id)
+	return fmt.Sprintf("%s-%s", makeCameraName(camera), id)
+}
+
+// To make sure that the bucket name is unique, we remove spaces and convert to lowercase.
+func makeCameraName(name string) string {
+	lowercase := strings.ToLower(name)
+	return strings.ReplaceAll(lowercase, " ", "")
 }

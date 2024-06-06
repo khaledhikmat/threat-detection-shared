@@ -199,5 +199,7 @@ func makeKeyName(camera, id string) string {
 // To make sure that the bucket name is unique, we remove spaces and convert to lowercase.
 func makeCameraName(name string) string {
 	lowercase := strings.ToLower(name)
-	return strings.ReplaceAll(lowercase, " ", "")
+	noparens := strings.ReplaceAll(lowercase, "(", "")
+	noparens = strings.ReplaceAll(noparens, ")", "")
+	return strings.ReplaceAll(noparens, " ", "")
 }
